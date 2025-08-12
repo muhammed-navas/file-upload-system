@@ -86,10 +86,8 @@ class ApiClient {
   }
 
   async post(url: string, data?: any, config?: AxiosRequestConfig) {
-    console.log('ApiClient: Making POST request to:', url, 'with data:', data);
     try {
       const response = await this.client.post(url, data, config);
-      console.log('ApiClient: POST request successful:', response);
       return response;
     } catch (error) {
       console.error('ApiClient: POST request failed:', error);

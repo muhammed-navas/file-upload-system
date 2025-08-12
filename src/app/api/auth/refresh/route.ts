@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
 
     const response = NextResponse.json({
       success: true,
-      data: { accessToken: tokens.accessToken }
+      data: { accessToken: tokens.accessToken, user: userWithoutPassword }
     });
 
     response.cookies.set('refreshToken', tokens.refreshToken, {

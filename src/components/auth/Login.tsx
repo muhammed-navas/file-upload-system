@@ -5,9 +5,11 @@ import Link from 'next/link';
 import { Button } from '../ui/Button';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'react-toastify';
+import { useRouter } from 'next/navigation';
 
 export default function LoginForm() {
   const { login } = useAuth();
+  const router = useRouter();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -21,7 +23,7 @@ export default function LoginForm() {
     try {
       await login(formData);
       toast.success('Logged in successfully');
-      window.location.href = '/home';
+      router.push('/home');
     } catch (err: any) {
       toast.error(err.message || 'Login failed');
     } finally {

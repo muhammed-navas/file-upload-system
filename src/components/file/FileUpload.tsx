@@ -5,6 +5,7 @@ import { apiClient } from '@/lib/api';
 import { Button } from '../ui/Button';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'react-toastify';
+import { emitFilesUploaded } from '@/lib/events';
 
 
 export const formatFileSize = (bytes: number) => {
@@ -50,7 +51,11 @@ export default function FileUpload() {
         formData.append('files', file);
       });
 
-      await apiClient.post('/files/upload', formData);
+      const response = await apiClient.post('/files/upload', formData);
+
+      if (response.data?.success && Array.isArray(response.data.files)) {
+        emitFilesUploaded(response.data.files);
+      }
 
       setSelectedFiles([]);
       toast.success('Files uploaded successfully');

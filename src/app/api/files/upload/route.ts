@@ -11,28 +11,8 @@ function sanitizeFilename(filename: string): string {
   return filename.replace(/[\s]+/g, '_').replace(/[^\w.-]/g, '_');
 }
 
-function guessMimeTypeFromName(name: string): string | null {
-  const lower = name.toLowerCase();
-  if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) return 'image/jpeg';
-  if (lower.endsWith('.png')) return 'image/png';
-  if (lower.endsWith('.gif')) return 'image/gif';
-  if (lower.endsWith('.webp')) return 'image/webp';
-  if (lower.endsWith('.svg')) return 'image/svg+xml';
-  if (lower.endsWith('.pdf')) return 'application/pdf';
-  if (lower.endsWith('.txt')) return 'text/plain';
-  if (lower.endsWith('.zip')) return 'application/zip';
-  if (lower.endsWith('.rar')) return 'application/vnd.rar';
-  if (lower.endsWith('.doc')) return 'application/msword';
-  if (lower.endsWith('.docx')) return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-  if (lower.endsWith('.mp4')) return 'video/mp4';
-  if (lower.endsWith('.mov')) return 'video/quicktime';
-  if (lower.endsWith('.avi')) return 'video/x-msvideo';
-  if (lower.endsWith('.mp3')) return 'audio/mpeg';
-  return null;
-}
-
 function detectMimeType(file: File): string {
-  return file.type || guessMimeTypeFromName(file.name) || 'application/octet-stream';
+  return file.type 
 }
 
 async function uploadBufferToCloudinary(buffer: Buffer, originalFilename: string, mimetype: string) {

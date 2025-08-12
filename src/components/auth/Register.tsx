@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '../ui/Button';
 import { useAuth } from '@/context/AuthContext';
+import { toast } from 'react-toastify';
 
 export default function RegisterForm() {
       const { register } = useAuth();
@@ -13,35 +14,33 @@ export default function RegisterForm() {
         password: '',
         confirmPassword: '',
     });
-    const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError('');
 
         if (formData.password !== formData.confirmPassword) {
-            setError('Passwords do not match');
+            toast.error('Passwords do not match');
             return;
         }
 
         if (formData.password.length < 6) {
-            setError('Password must be at least 6 characters long');
+            toast.error('Password must be at least 6 characters long');
             return;
         }
 
         setLoading(true);
 
         try {
-            console.log('Calling register function...');
             await register({
                 name: formData.name,
                 email: formData.email,
                 password: formData.password,
             });
+            toast.success('Account created successfully');
             window.location.href = '/login';
         } catch (err: any) {
-            setError(err.message);
+            toast.error(err.message || 'Registration failed');
         } finally {
             setLoading(false);
         }
@@ -58,12 +57,6 @@ export default function RegisterForm() {
             </div>
             <form onSubmit={handleSubmit} className='mx-auto mt-16 max-w-xl sm:mt-20'>
                 <div className="space-y-4">
-                    {error && (
-                        <div className="bg-red-50 border border-red-200 rounded-md p-4">
-                            <p className="text-red-800 text-sm">{error}</p>
-                        </div>
-                    )}
-
                     <div className="space-y-2">
                         <label htmlFor="name" className='block text-sm/6 font-semibold text-black'>Full Name</label>
                         <input

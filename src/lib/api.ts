@@ -3,27 +3,24 @@ import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 class ApiClient {
   private client: AxiosInstance;
   private accessToken: string | null = null;
-  private refreshToken: string | null = null;
 
   constructor() {
     this.client = axios.create({
       baseURL: '/api',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      withCredentials: true,
     });
 
-    // Load tokens from localStorage on initialization
+    // Load access token from localStorage on initialization
     if (typeof window !== 'undefined') {
       this.accessToken = localStorage.getItem('accessToken');
-      this.refreshToken = localStorage.getItem('refreshToken');
     }
 
     // Request interceptor to add auth token
     this.client.interceptors.request.use(
       (config) => {
         if (this.accessToken) {
-          config.headers.Authorization = `Bearer ${this.accessToken}`;
+          config.headers = config.headers || {};
+          (config.headers as any).Authorization = `Bearer ${this.accessToken}`;
         }
         return config;
       },
@@ -41,26 +38,21 @@ class ApiClient {
         if (error.response?.status === 401 && !original._retry) {
           original._retry = true;
 
-          if (this.refreshToken) {
-            try {
-              const response = await axios.post('/api/auth/refresh', {
-                refreshToken: this.refreshToken,
-              });
+          try {
+            const response = await axios.post('/api/auth/refresh', undefined, { withCredentials: true });
+            const { accessToken } = response.data.data;
+            this.setAccessToken(accessToken);
 
-              const { tokens } = response.data.data;
-              this.setTokens(tokens.accessToken, tokens.refreshToken);
-
-              // Retry the original request
-              original.headers.Authorization = `Bearer ${tokens.accessToken}`;
-              return this.client(original);
-            } catch (refreshError) {
-              this.clearTokens();
+            // Retry the original request
+            original.headers = original.headers || {};
+            original.headers.Authorization = `Bearer ${accessToken}`;
+            return this.client(original);
+          } catch (refreshError) {
+            this.clearAccessToken();
+            if (typeof window !== 'undefined') {
               window.location.href = '/login';
-              return Promise.reject(refreshError);
             }
-          } else {
-            this.clearTokens();
-            window.location.href = '/login';
+            return Promise.reject(refreshError);
           }
         }
 
@@ -69,30 +61,23 @@ class ApiClient {
     );
   }
 
-  setTokens(accessToken: string, refreshToken: string) {
+  setAccessToken(accessToken: string) {
     this.accessToken = accessToken;
-    this.refreshToken = refreshToken;
-    
     if (typeof window !== 'undefined') {
       localStorage.setItem('accessToken', accessToken);
-      localStorage.setItem('refreshToken', refreshToken);
     }
   }
 
-  clearTokens() {
+  clearAccessToken() {
     this.accessToken = null;
-    this.refreshToken = null;
-    
     if (typeof window !== 'undefined') {
       localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
     }
   }
 
   getTokens() {
     return {
       accessToken: this.accessToken,
-      refreshToken: this.refreshToken,
     };
   }
 

@@ -36,11 +36,12 @@ export const AuthProvider= ({
     try {
       const response = await apiClient.post('/auth/login', credentials);
       
-      // Check if the response has the expected structure
       if (response.data.success && response.data.data) {
-        const { user, tokens } = response.data.data;
+        const { user, accessToken } = response.data.data;
         
-        apiClient.setTokens(tokens.accessToken, tokens.refreshToken);
+        // Store token in localStorage and apiClient
+        localStorage.setItem('accessToken', accessToken);
+        apiClient.setAccessToken(accessToken);
         localStorage.setItem('user', JSON.stringify(user));
         setUser(user);
       } else {
@@ -57,12 +58,13 @@ export const AuthProvider= ({
       const response = await apiClient.post('/auth/register', data);
       console.log('AuthContext: API response received:', response);
       
-      // Check if the response has the expected structure
       if (response.data.success && response.data.data) {
-        const { user, tokens } = response.data.data;
-        console.log('AuthContext: Extracted user and tokens:', { user, tokens });
+        const { user, accessToken } = response.data.data;
+        console.log('AuthContext: Extracted user and accessToken:', { user, accessToken });
         
-        apiClient.setTokens(tokens.accessToken, tokens.refreshToken);
+        // Store token in localStorage and apiClient
+        localStorage.setItem('accessToken', accessToken);
+        apiClient.setAccessToken(accessToken);
         localStorage.setItem('user', JSON.stringify(user));
         setUser(user);
         console.log('AuthContext: User registered successfully');

@@ -38,10 +38,20 @@ export async function POST(req: NextRequest) {
     const { password: _pw, ...userWithoutPassword } = user;
     const tokens = generateTokens(userWithoutPassword);
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
-      data: { user: userWithoutPassword, tokens }
+      data: { user: userWithoutPassword, accessToken: tokens.accessToken }
     });
+
+    response.cookies.set('refreshToken', tokens.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+    });
+
+    return response;
   } catch (error: any) {
     console.error('Login error:', error);
     return NextResponse.json(

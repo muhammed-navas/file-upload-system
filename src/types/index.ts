@@ -28,7 +28,19 @@ export interface User {
     originalName: string;
     size: number;
     mimetype: string;
-    uploadedAt: string;
-    userId: string;
-    url: string;
+    cloudinaryUrl: string;
+    uploadedBy: string;
+    createdAt: string;
+  }
+
+  export interface File {
+    id: string;
+    filename: string;
+    originalName: string;
+    mimetype: string;
+    size: number;
+    cloudinaryUrl: string;
+    cloudinaryPublicId: string;
+    uploadedBy: string;
+    createdAt: string;
   }

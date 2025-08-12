@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '../ui/Button';
 import { useAuth } from '@/context/AuthContext';
+import { toast } from 'react-toastify';
 
 export default function LoginForm() {
   const { login } = useAuth();
@@ -11,19 +12,18 @@ export default function LoginForm() {
     email: '',
     password: '',
   });
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
 
     try {
       await login(formData);
-      window.location.href = '/';
+      toast.success('Logged in successfully');
+      window.location.href = '/home';
     } catch (err: any) {
-      setError(err.message);
+      toast.error(err.message || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -40,12 +40,6 @@ export default function LoginForm() {
       </div>
       <form onSubmit={handleSubmit} className='mx-auto mt-16 max-w-xl sm:mt-20'>
         <div className="space-y-4">
-          {error && (
-            <div >
-              <div>{error}</div>
-            </div>
-          )}
-
           <div className="space-y-2">
             <label htmlFor="email" className='block text-sm/6 font-semibold text-black' >Email</label>
             <input

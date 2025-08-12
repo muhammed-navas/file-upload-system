@@ -14,7 +14,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 
   React.useEffect(() => {
     if (!loading && !user) {
-      router.push('/login');
+      router.replace('/login');
     }
   }, [user, loading, router]);
 

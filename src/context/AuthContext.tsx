@@ -3,6 +3,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { apiClient } from '@/lib/api';
 import { LoginRequest, RegisterRequest, User } from '@/types';
+import { onUnauthorized } from '@/lib/events';
+import { useRouter } from 'next/navigation';
 
 interface AuthContextType {
   user: User | null;
@@ -19,6 +21,7 @@ export const AuthProvider= ({
 }:{ children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const initAuth = async () => {
@@ -30,8 +33,7 @@ export const AuthProvider= ({
           if (userData) {
             setUser(JSON.parse(userData));
           }
-          setLoading(false);
-          return;
+          return; // will setLoading(false) in finally
         }
 
         // No access token in localStorage - try to refresh using cookies
@@ -45,8 +47,7 @@ export const AuthProvider= ({
               localStorage.setItem('user', JSON.stringify(refreshedUser));
               setUser(refreshedUser);
             }
-            setLoading(false);
-            return;
+            return; // will setLoading(false) in finally
           }
         } catch (_err) {
           // fall through to redirect
@@ -56,16 +57,25 @@ export const AuthProvider= ({
         apiClient.clearAccessToken();
         localStorage.removeItem('user');
         setUser(null);
-        if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
-          window.location.href = '/login';
-        }
+        router.replace('/login');
       } finally {
         setLoading(false);
       }
     };
 
     initAuth();
-  }, []);
+  }, [router]);
+
+  // Centralized unauthorized handling
+  useEffect(() => {
+    const unsubscribe = onUnauthorized(() => {
+      apiClient.clearAccessToken();
+      localStorage.removeItem('user');
+      setUser(null);
+      router.replace('/login');
+    });
+    return unsubscribe;
+  }, [router]);
 
   const login = async (credentials: LoginRequest) => {
     try {
@@ -114,6 +124,7 @@ export const AuthProvider= ({
       apiClient.clearAccessToken();
       localStorage.removeItem('user');
       setUser(null);
+      router.replace('/login');
     }
   };
 

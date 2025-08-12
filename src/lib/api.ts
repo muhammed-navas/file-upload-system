@@ -1,4 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import { emitUnauthorized } from './events';
 
 class ApiClient {
   private client: AxiosInstance;
@@ -49,9 +50,7 @@ class ApiClient {
             return this.client(original);
           } catch (refreshError) {
             this.clearAccessToken();
-            if (typeof window !== 'undefined') {
-              window.location.href = '/login';
-            }
+            emitUnauthorized();
             return Promise.reject(refreshError);
           }
         }

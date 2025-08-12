@@ -8,18 +8,6 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen ">
-      <header className="border-b">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold">SecureFiles</h1>
-          </div>
-          <div className="flex gap-2">
-          <ButtonWithLink label='Sign In' link="/login" />
-          </div>
-        </div>
-      </header>
-
-      {/* Hero Section */}
       <section className="py-16 text-center">
         <div className="container mx-auto px-4 max-w-4xl">
           <h1 className="text-4xl md:text-6xl font-bold mb-6">

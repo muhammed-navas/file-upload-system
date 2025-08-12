@@ -6,6 +6,7 @@ import { Button } from '../ui/Button';
 import { useAuth } from '@/context/AuthContext';
 import { FileItem } from '@/types';
 import { toast } from 'react-toastify';
+import { formatFileSize } from './FileUpload';
 
 export default function FileList() {
   const [files, setFiles] = useState<FileItem[]>([]);
@@ -50,23 +51,6 @@ export default function FileList() {
     }
   };
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
 
   if (!user) {
     return (
@@ -120,7 +104,7 @@ export default function FileList() {
                       {file.originalName}
                     </h3>
                     <p className="text-sm text-gray-500">
-                      {formatFileSize(file.size)} • {formatDate(file.createdAt)}
+                      {formatFileSize(file.size)} 
                     </p>
                   </div>
                 </div>

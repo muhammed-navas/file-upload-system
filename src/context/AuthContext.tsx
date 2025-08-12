@@ -9,6 +9,7 @@ interface AuthContextType {
   login: (credentials: LoginRequest) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
   loading: boolean;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -20,10 +21,8 @@ export const AuthProvider= ({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in on app start
     const tokens = apiClient.getTokens();
     if (tokens.accessToken) {
-      // In a real app, you might want to validate the token with the server
       const userData = localStorage.getItem('user');
       if (userData) {
         setUser(JSON.parse(userData));
@@ -39,10 +38,8 @@ export const AuthProvider= ({
       if (response.data.success && response.data.data) {
         const { user, accessToken } = response.data.data;
         
-        // Store token in localStorage and apiClient
         localStorage.setItem('accessToken', accessToken);
         apiClient.setAccessToken(accessToken);
-        localStorage.setItem('user', JSON.stringify(user));
         setUser(user);
       } else {
         throw new Error(response.data.error || 'Login failed');
@@ -54,32 +51,36 @@ export const AuthProvider= ({
 
   const register = async (data: RegisterRequest) => {
     try {
-      console.log('AuthContext: Making API call to /auth/register with data:', data);
       const response = await apiClient.post('/auth/register', data);
-      console.log('AuthContext: API response received:', response);
       
       if (response.data.success && response.data.data) {
         const { user, accessToken } = response.data.data;
-        console.log('AuthContext: Extracted user and accessToken:', { user, accessToken });
         
         // Store token in localStorage and apiClient
         localStorage.setItem('accessToken', accessToken);
         apiClient.setAccessToken(accessToken);
-        localStorage.setItem('user', JSON.stringify(user));
         setUser(user);
-        console.log('AuthContext: User registered successfully');
       } else {
-        console.error('AuthContext: Invalid response structure:', response.data);
         throw new Error(response.data.error || 'Registration failed');
       }
     } catch (error: any) {
-      console.error('AuthContext: Registration error:', error);
       throw new Error(error.response?.data?.error || 'Registration failed');
     }
   };
 
+  const logout = async () => {
+    try {
+      await apiClient.post('/auth/logout');
+    } catch (err) {
+    } finally {
+      apiClient.clearAccessToken();
+      localStorage.removeItem('user');
+      setUser(null);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, register, loading }}>
+    <AuthContext.Provider value={{ user, login, register, loading, logout }}>
       {children}
     </AuthContext.Provider>
   );

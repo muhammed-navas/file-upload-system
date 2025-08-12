@@ -38,7 +38,7 @@ export default function RegisterForm() {
                 password: formData.password,
             });
             toast.success('Account created successfully');
-            window.location.href = '/login';
+            window.location.href = '/home';
         } catch (err: any) {
             toast.error(err.message || 'Registration failed');
         } finally {

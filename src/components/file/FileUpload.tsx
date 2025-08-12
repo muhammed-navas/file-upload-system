@@ -1,38 +1,39 @@
 'use client';
 
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { apiClient } from '@/lib/api';
 import { Button } from '../ui/Button';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'react-toastify';
 
 
+export const formatFileSize = (bytes: number) => {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+};
+
 export default function FileUpload() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
 
-  const handleFileSelect = (files: File[]) => {
-    const validFiles = Array.from(files).filter(file => {
-      if (file.size > 10 * 1024 * 1024) {
-        toast.error(`File ${file.name} is too large (max 10MB)`);
-        return false;
-      }
-      return true;
-    });
-
-    setSelectedFiles(prev => [...prev, ...validFiles]);
-  };
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      handleFileSelect(Array.from(e.target.files));
+      const validFiles = Array.from(e.target.files).filter(file => {
+        if (file.size > 10 * 1024 * 1024) {
+          toast.error(`File ${file.name} is too large (max 10MB)`);
+          return false;
+        }
+        return true;
+      });
+      setSelectedFiles(prev => [...prev, ...validFiles]);
     }
   };
-
 
   const removeFile = (index: number) => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
@@ -42,7 +43,6 @@ export default function FileUpload() {
     if (selectedFiles.length === 0 || !user) return;
 
     setUploading(true);
-    setUploadProgress(0);
 
     try {
       const formData = new FormData();
@@ -50,17 +50,9 @@ export default function FileUpload() {
         formData.append('files', file);
       });
 
-      await apiClient.post('/files/upload', formData, {
-        onUploadProgress: (progressEvent) => {
-          if (progressEvent.total) {
-            const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-            setUploadProgress(progress);
-          }
-        },
-      });
+      await apiClient.post('/files/upload', formData);
 
       setSelectedFiles([]);
-      setUploadProgress(0);
       toast.success('Files uploaded successfully');
     } catch (err: unknown) {
       console.error('Upload error:', err);
@@ -71,13 +63,7 @@ export default function FileUpload() {
     }
   };
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
+
 
   if (!user) {
     return (
@@ -90,9 +76,7 @@ export default function FileUpload() {
   return (
     <div className="space-y-4">
       <div
-        className={`border-2 border-dashed transition-colors cursor-pointer ${
-          isDragOver ? 'border-primary bg-primary/5' : 'border-muted-foreground/25'
-        }`}
+        className={`border-2 border-dashed transition-colors cursor-pointer `}
         onClick={() => fileInputRef.current && fileInputRef.current.click()}
       >
         <div className="flex flex-col items-center justify-center py-12">
@@ -138,21 +122,6 @@ export default function FileUpload() {
                 </div>
               ))}
             </div>
-
-            {uploading && (
-              <div className="mt-4 space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Uploading...</span>
-                  <span>{uploadProgress}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-primary h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${uploadProgress}%` }}
-                  ></div>
-                </div>
-              </div>
-            )}
             <Button 
               disabled={uploading} 
               label={uploading ? 'Uploading...' : `Upload ${selectedFiles.length} file${selectedFiles.length > 1 ? 's' : ''}`} 

@@ -11,7 +11,7 @@ export const ButtonWithLink = ({ label, link }: { label: string, link: string })
 
 export const Button = ({ label, type = "button", onClick, disabled }: { label: string, type?: "button" | "submit" | "reset", onClick?: React.MouseEventHandler<HTMLButtonElement>, disabled?: boolean }) => {
     return (
-        <button disabled={disabled} onClick={onClick} type={type} className="rounded-md bg-gray-700 px-3.5 py-2.5 text-sm font-semibold text-white inset-ring inset-ring-white/5 hover:bg-gray-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+        <button disabled={disabled} onClick={onClick} type={type} className="cursor-pointer rounded-md bg-gray-700 px-3.5 py-2.5 text-sm font-semibold text-white inset-ring inset-ring-white/5 hover:bg-gray-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
             {label}
         </button>
     )

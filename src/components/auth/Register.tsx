@@ -40,7 +40,7 @@ export default function RegisterForm() {
                 password: formData.password,
             });
             toast.success('Account created successfully');
-            router.push('/home');
+            router.push('/login');
         } catch (err: any) {
             toast.error(err.message || 'Registration failed');
         } finally {

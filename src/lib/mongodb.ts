@@ -6,7 +6,7 @@ export async function connectToDatabase() {
   if (isConnected) {
     return mongoose.connection;
   }
-  const uri = process.env.MONGODB_URI;
+  const uri = process.env.MONGODB_URL;
   if (!uri) {
     throw new Error('MONGODB_URI is not defined in environment variables');
   }
